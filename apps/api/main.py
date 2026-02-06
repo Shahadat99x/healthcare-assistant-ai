@@ -1,0 +1,120 @@
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import models
+import json
+import os
+from services.ollama_client import ollama_client
+from services.safety_service import safety_service
+
+app = FastAPI()
+
+# CORS configuration
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Standardized Error Handling
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"code": "HTTP_ERROR", "message": exc.detail}},
+    )
+
+@app.get("/health")
+async def read_health():
+    ollama_status = await ollama_client.check_health()
+    return {
+        "status": "ok", 
+        "service": "api",
+        "ollama_connected": ollama_status
+    }
+
+@app.get("/debug/directory/preview")
+async def debug_directory_preview(limit: int = 5):
+    """Debug endpoint to preview processed directory data."""
+    # Resolve path relative to repo root (2 levels up from apps/api)
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    file_path = os.path.join(base_dir, "data", "processed", "facilities.cleaned.jsonl")
+    
+    if not os.path.exists(file_path):
+         return JSONResponse(
+            status_code=404,
+            content={"error": {"code": "DATA_MISSING", "message": f"Processed data not found at {file_path}. Run 'python scripts/validate_directory.py' first."}}
+        )
+    
+    results = []
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                if i >= limit:
+                    break
+                if line.strip():
+                     results.append(json.loads(line))
+        return {"count": len(results), "preview": results}
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Failed to read data: {str(e)}")
+
+
+@app.post("/chat", response_model=models.ChatResponse)
+async def chat_endpoint(request: models.ChatRequest):
+    try:
+        # 1. Safety Evaluation (Phase 2)
+        safety_eval = safety_service.evaluate_user_message(request.message)
+        
+        # If Evaluate returns a determinstic response (Escalate or Refuse)
+        if safety_eval.action in ["escalate", "refuse"] and safety_eval.message_override:
+            return models.ChatResponse(
+                assistant_message=safety_eval.message_override,
+                urgency=safety_eval.urgency,
+                safety_flags=safety_eval.flags,
+                citations=[],
+                recommendations=[]
+            )
+
+        # 2. Allow - Call Ollama
+        # Construct messages for Ollama
+        messages = [
+            {"role": "system", "content": "You are a helpful medical triage assistant. Provide clear, safe advice. Do not replace professional care. If urgent, advise calling emergency services."},
+            {"role": "user", "content": request.message}
+        ]
+        
+        # Call Ollama
+        response_content = await ollama_client.generate_response(messages)
+        
+        # Append Disclaimer (Phase 2)
+        disclaimer = "\n\nI’m not a doctor. If symptoms worsen or you have serious concerns, seek medical care."
+        final_message = response_content + disclaimer
+        
+        # Return structured response (Baseline Mode)
+        return models.ChatResponse(
+            assistant_message=final_message,
+            urgency=safety_eval.urgency, # Default "self_care" from safety service
+            safety_flags=safety_eval.flags, # Empty from allow
+            citations=[],
+            recommendations=[]
+        )
+    except RuntimeError as e:
+        # Ollama connection error - Standardized Error
+        return JSONResponse(
+            status_code=503, 
+            content={"error": {"code": "MODEL_UNAVAILABLE", "message": str(e)}}
+        )
+    except Exception as e:
+        return JSONResponse(
+             status_code=500,
+             content={"error": {"code": "INTERNAL_ERROR", "message": str(e)}}
+        )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
