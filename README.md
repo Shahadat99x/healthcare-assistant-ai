@@ -13,7 +13,15 @@ The current version implements the shell for Phase 0.
 - `docs`: Project documentation
 - `rag`, `data`, `scripts`, `eval`: Placeholders for future phases
 
-### HOW TO RUN
+### HOW TO RUN (Easy Mode)
+
+Run the helper script from the root:
+
+```powershell
+./dev.ps1
+```
+
+### HOW TO RUN (Manual Mode)
 
 #### 1. API (Backend)
 
@@ -22,8 +30,6 @@ cd apps/api
 # Install dependencies
 pip install -r requirements.txt
 # Run server
-python main.py
-# OR
 uvicorn main:app --reload
 ```
 
