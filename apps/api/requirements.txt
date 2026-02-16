@@ -9,3 +9,4 @@ opencv-python-headless
 pytesseract
 pillow
 python-multipart
+python-dotenv

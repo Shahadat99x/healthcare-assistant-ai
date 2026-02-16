@@ -1,0 +1,23 @@
+# Build artifacts
+node_modules/
+.next/
+dist/
+coverage/
+.turbo/
+.vercel/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+Dockerfile

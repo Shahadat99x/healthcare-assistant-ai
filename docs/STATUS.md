@@ -1,24 +1,23 @@
 # Project Status
 
-## Current Phase: Phase 2 (Safety Policy)
+**Current Phase**: Phase 5 (Demo & Report Hardening) - **COMPLETE**
 
-### Completed
+## Completed Phases
 
-- **Phase 0**: Repo Setup + App Shell (FastAPI + Next.js).
-- **Phase 1**: Local LLM Integration (Ollama + `qwen2.5:7b-instruct`).
-- **Phase 1.1**: DX Improvements + Sample Data Validation.
-- **Phase 2**: Deterministic Safety Policy Engine.
-  - Emergency Escalation (Red Flags).
-  - Medical Refusal (Dosage/Rx).
-  - Standardized Disclaimers.
-  - Safety Service in API.
+- **Phase 1: Foundation**: API, Intent Routing, Safety Service (Emergency Lock).
+- **Phase 2: Logistics**: Bucharest Resource Locator (Hospitals/Pharmacies).
+- **Phase 3: Triage v2**: Deterministic Symptom Analysis, Urgency logic, Grounding overrides.
+- **Phase 4: Trusted RAG v2**: Metadata-rich ingestion, Query Expansion, Re-ranking (NHS/WHO/CDC), Structured Citations.
+- **Phase 5: Demo & Export**: UI Polish, Markdown support, Scenario Panel, Evidence Export.
 
-### In Progress
+## System Health
 
-- Verification of Safety Rules.
+- **API**: Stable (FastAPI).
+- **Frontend**: Polished (Next.js + Tailwind + Markdown).
+- **RAG**: Connected to local ChromaDB (Trusted Corpus only).
+- **Safety**: Active (Red flag detection + Emergency Locking).
 
-### Roadmap
+## Next Steps
 
-- **Phase 3**: RAG (Knowledge Base Retrieval).
-- **Phase 4**: Evaluation Framework.
-- **Phase 5**: Directory Database (Postgres).
+- Final Report Generation.
+- Thesis Defense Preparation.

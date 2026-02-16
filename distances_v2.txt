@@ -1,0 +1,41 @@
+Index Path: W:\healthcare-assistant-ai\rag\index\chroma
+
+Query: I have a fever of 40 degrees
+  Result 1: Dist=0.7406 | NHS - Fever in adults
+High temperature (fever) in ... | Fever in adults
+  Result 2: Dist=1.2734 | ur pee is light yellow and clear
+- take paracetamo... | Fever in adults
+  Result 3: Dist=1.3003 | CDC - Flu Symptoms & Complications
+Influenza (Flu)... | Flu Symptoms & Complications
+
+Query: I have a mild headache
+  Result 1: Dist=1.1594 | NHS - Fever in adults
+High temperature (fever) in ... | Fever in adults
+  Result 2: Dist=1.2564 | ur pee is light yellow and clear
+- take paracetamo... | Fever in adults
+  Result 3: Dist=1.4453 | CDC - Flu Symptoms & Complications
+Influenza (Flu)... | Flu Symptoms & Complications
+
+Query: Rash for 2 weeks
+  Result 1: Dist=1.2977 | ur pee is light yellow and clear
+- take paracetamo... | Fever in adults
+  Result 2: Dist=1.5516 | NHS - Fever in adults
+High temperature (fever) in ... | Fever in adults
+  Result 3: Dist=1.5755 | WHO - Cough Management in Adults
+Cough is a common... | Cough in adults (Management)
+
+Query: My leg is broken
+  Result 1: Dist=1.6565 | ur pee is light yellow and clear
+- take paracetamo... | Fever in adults
+  Result 2: Dist=1.7369 | NHS - Fever in adults
+High temperature (fever) in ... | Fever in adults
+  Result 3: Dist=1.8369 | CDC - Flu Symptoms & Complications
+Influenza (Flu)... | Flu Symptoms & Complications
+
+Query: Just checking in
+  Result 1: Dist=1.9239 | ur pee is light yellow and clear
+- take paracetamo... | Fever in adults
+  Result 2: Dist=1.9573 | NHS - Fever in adults
+High temperature (fever) in ... | Fever in adults
+  Result 3: Dist=2.0000 | CDC - Flu Symptoms & Complications
+Influenza (Flu)... | Flu Symptoms & Complications

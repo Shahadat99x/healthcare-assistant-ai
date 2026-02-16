@@ -1,0 +1,26 @@
+{
+  "nhs_fever_adults.txt": {
+    "title": "Fever in adults",
+    "org": "NHS",
+    "url": "https://www.nhs.uk/conditions/fever-in-adults/",
+    "tags": ["fever", "high_temperature", "adult"],
+    "doc_type": "patient_info",
+    "date_accessed": "2026-02-11"
+  },
+  "who_cough_adults.txt": {
+    "title": "Cough in adults (Management)",
+    "org": "WHO",
+    "url": "https://www.who.int/news-room/fact-sheets/detail/cough",
+    "tags": ["cough", "respiratory", "viral"],
+    "doc_type": "guideline",
+    "date_accessed": "2026-02-11"
+  },
+  "cdc_flu_symptoms.txt": {
+    "title": "Flu Symptoms & Complications",
+    "org": "CDC",
+    "url": "https://www.cdc.gov/flu/symptoms/symptoms.htm",
+    "tags": ["flu", "influenza", "fever", "cough", "sore_throat"],
+    "doc_type": "patient_info",
+    "date_accessed": "2026-02-11"
+  }
+}

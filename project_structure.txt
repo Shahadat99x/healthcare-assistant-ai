@@ -1,0 +1,59 @@
+project_root/
+├── .env.example
+├── .env.local
+├── dev.ps1
+├── README.md
+├── apps/
+│   ├── api/
+│   │   ├── config.py
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   ├── requirements.txt
+│   │   ├── test_api.py
+│   │   ├── cv/
+│   │   │   ├── boundary.py
+│   │   │   ├── ocr.py
+│   │   │   ├── quality.py
+│   │   │   ├── scan.py
+│   │   │   ├── schemas.py
+│   │   │   ├── utils.py
+│   │   │   └── visualize.py
+│   │   ├── routes/
+│   │   │   ├── cv_samples.py
+│   │   │   └── intake.py
+│   │   └── services/
+│   │       ├── ollama_client.py
+│   │       ├── rag_service.py
+│   │       └── safety_service.py
+│   └── web/
+│       ├── .env.example
+│       ├── .env.local
+│       ├── next.config.ts
+│       ├── package.json
+│       ├── tsconfig.json
+│       ├── app/
+│       │   ├── favicon.ico
+│       │   ├── globals.css
+│       │   ├── layout.tsx
+│       │   ├── page.tsx
+│       │   ├── chat/
+│       │   │   └── page.tsx
+│       │   └── intake/
+│       │       └── page.tsx
+│       └── public/
+├── data/
+├── docs/
+├── eval/
+├── rag/
+│   ├── corpus_raw/
+│   └── index/
+└── scripts/
+    ├── cv_eval.py
+    ├── ingest_rag.py
+    ├── run_all_eval.ps1
+    ├── run_eval.py
+    ├── summarize_eval.py
+    ├── test_api_live.py
+    ├── test_ocr.py
+    ├── validate_directory.py
+    └── verify_ocr.py

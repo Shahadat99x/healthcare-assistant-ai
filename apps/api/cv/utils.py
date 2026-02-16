@@ -1,8 +1,6 @@
 import base64
 import numpy as np
 import cv2
-from io import BytesIO
-from PIL import Image
 
 def decode_image_to_cv2(file_bytes: bytes) -> np.ndarray:
     """Decodes image bytes to OpenCV format (BGR)."""

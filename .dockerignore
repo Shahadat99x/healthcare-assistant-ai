@@ -1,0 +1,47 @@
+# Version control
+.git
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Node
+node_modules/
+.next/
+dist/
+coverage/
+
+# Environment (secrets)
+.env
+.env.local
+apps/api/.env
+apps/web/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# RAG source corpus (not needed at runtime, only index is)
+rag/corpus_raw/
+
+# Evaluation / debug artifacts
+eval/
+distances.txt
+distances_v2.txt
+debug_*.py
+check_chroma_distances.py
+project_structure.txt
+
+# Scripts (not needed at API runtime)
+scripts/
+
+# Docker (avoid recursive copy)
+docker-compose.yml
+Dockerfile
+
+# Docs (not needed in container)
+docs/

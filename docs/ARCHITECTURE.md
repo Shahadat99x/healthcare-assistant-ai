@@ -1,39 +1,51 @@
-# ARCHITECTURE — System Design
+# System Architecture
 
-## 1) High-level components
-- **Web (Next.js):** chat UI, urgency badge, sources panel
-- **API (FastAPI):** orchestrator (policy + retrieval + model call)
-- **Model runtime (Ollama):** local LLM inference
-- **Vector DB (Chroma/FAISS):** RAG index over curated documents
-- **Postgres (optional for MVP):** local directory + audit logs (non-PII)
+## Overview
 
-## 2) Request flow (chat)
-1. Web sends `{session_id, message}` → API
-2. API runs **Safety Policy Engine**
-   - detect red flags → urgency + escalation text
-   - apply refusal rules
-3. API runs **RAG Retrieval**
-   - embed query → top-k chunks + metadata
-4. API composes prompt (system rules + retrieved context + history)
-5. API calls local model (Ollama) → response
-6. API returns:
-   - `assistant_message`
-   - `urgency_level`
-   - `citations[]`
-   - `recommendations[]` (optional local directory)
+A local-first, safety-critical AI healthcare assistant designed for safe triage and grounded advice.
 
-## 3) Data stores
-- `rag/corpus_raw/*` — curated docs
-- `rag/index/*` — vector DB files
-- `data/raw/*` — directory raw data (optional)
-- `data/processed/*` — normalized directory data (generated)
+## Pipeline (Request Flow)
 
-## 4) Scaling plan (drop data later)
-- Add docs → run `scripts/ingest_rag.py` → update vector index
-- Add directory rows → run `scripts/ingest_directory.py` → upsert to Postgres
-- No API/UX changes needed for new rows; only data updates.
+1. **User Input** (Web UI)
+   ↓
+2. **Intent Router** (API) -> `chitchat`, `meta`, `logistics`, `medical_symptoms`
+   ↓
+3. **Safety Policy Engine**
+   - Checks for Red Flags (Emergency).
+   - Checks for Lock State.
+   - **Action**: Allow, Escalate (Lock), or Refuse.
+     ↓
+4. **Triage Service** (If Safe)
+   - Parses Symptoms (Rules-based).
+   - Assigns Urgency (`emergency`, `urgent`, `routine`, `self_care`, `unknown`).
+   - If `unknown` -> Ask clarifying questions (Skip RAG).
+     ↓
+5. **RAG Retrieval** (If Known Urgency)
+   - Expands Query (User msg + Symptom Tags).
+   - Retrieves Chunks (ChromaDB).
+   - **Re-ranking**: Boosts Trusted Orgs (NHS, WHO, CDC).
+   - **Grounding Check**: If no relevant docs -> Set `citations_used=False`.
+     ↓
+6. **LLM Generation** (Ollama)
+   - System Prompt enforces "No Advice without Sources".
+   - Generates Response with Markdown.
+     ↓
+7. **Response Formatting**
+   - Attaches Structured Citations.
+   - Attaches Triage Metadata.
+   - Attaches Local Resources (if Emergency).
 
-## 5) Security / privacy (MVP)
-- Do not store PII by default.
-- Log only anonymized metadata for evaluation.
-- Always show disclaimers; emergency escalation for red flags.
+## Modules
+
+- **Apps**:
+  - `apps/api`: FastAPI backend.
+  - `apps/web`: Next.js frontend (Markdown support).
+- **Services**:
+  - `safety_service.py`: Risk assessment.
+  - `triage_service.py`: Symptom parsing.
+  - `rag_service.py`: Retrieval & Re-ranking.
+  - `logistics_service.py`: Database of local resources.
+- **Data**:
+  - `rag/corpus_raw/trusted_guidelines`: Validated source documents.
+  - `rag/index`: ChromaDB vector store.
+  - `data/processed`: Cleaned logistics data.

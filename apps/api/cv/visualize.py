@@ -5,7 +5,7 @@ Generates visual overlays for glare detection and other CV debug outputs.
 import cv2
 import numpy as np
 import base64
-from typing import Optional, Tuple
+from typing import Tuple
 
 
 def detect_glare_mask(image: np.ndarray, threshold: int = 245) -> np.ndarray:
