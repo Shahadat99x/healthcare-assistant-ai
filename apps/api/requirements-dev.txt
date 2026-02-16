@@ -1,0 +1,4 @@
+# Dev/CI dependencies (install after requirements.txt)
+ruff
+pytest
+httpx          # needed for TestClient

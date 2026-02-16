@@ -4,7 +4,7 @@ Detects document corners using OpenCV edge detection and contour analysis.
 """
 import cv2
 import numpy as np
-from typing import List, Optional, Dict, Any
+from typing import Dict, Any
 
 
 def order_points(pts: np.ndarray) -> np.ndarray:

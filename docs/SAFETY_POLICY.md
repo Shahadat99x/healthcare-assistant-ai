@@ -6,10 +6,11 @@ This document outlines the deterministic safety rules implemented in the Healthc
 
 The system classifies every user message into one of four urgency levels:
 
-- **Emergency (`emergency`)**: Life-threatening conditions requiring immediate action.
-- **Urgent (`urgent`)**: Serious conditions requiring timely medical attention.
-- **GP (`gp`)**: Non-urgent issues suitable for a General Practitioner.
-- **Self Care (`self_care`)**: Minor issues manageble at home (default).
+- **Emergency (`emergency`)**: Life-threatening conditions (Safety Service) or severe symptoms (Triage).
+- **Urgent (`urgent`)**: Serious conditions requiring timely care (e.g. High fever > 39C, breathing difficulty).
+- **Routine (`routine`)**: Long-standing (>7 days) or non-worsening symptoms.
+- **Self Care (`self_care`)**: Mild, short-term issues (e.g. mild cold).
+- **Unknown (`unknown`)**: Vague symptoms requiring clarification.
 
 ## 2. Deterministic Rules (Regex-Based)
 
@@ -52,6 +53,12 @@ Appended to all other responses:
 
 ## 3. Implementation Details
 
-- **Service**: `apps/api/services/safety_service.py`
-- **Method**: `evaluate_user_message(text)` matches text against pre-defined regex lists.
-- **Priority**: Emergency > Refusal > Allow.
+- **Safety Service** (`apps/api/services/safety_service.py`):
+  - Primary Gate for Red Flags (Emergency Lock).
+  - Regex-based refusal for out-of-scope topics.
+- **Triage Service** (`apps/api/services/triage_service.py`) (Phase 3):
+  - Secondary Risk Stratification.
+  - Parses symptoms, severity, and duration.
+  - Assigns `urgent`, `routine`, `self_care`, or `unknown`.
+- **Grounding Enforcement**:
+  - If RAG retrieves no relevant guidelines, the system refuses to provide specific medical advice.

@@ -2,8 +2,7 @@ import json
 import os
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from cv.schemas import (
-    IntakeResponse, PreviewResult, QualityResult, OcrResult,
-    BoundaryResult, ScanMeta, CornerPoint, OriginalPreview,
+    IntakeResponse, PreviewResult, BoundaryResult, CornerPoint, OriginalPreview,
     OcrVariant, DebugOverlays
 )
 from cv.utils import decode_image_to_cv2, encode_cv2_to_base64, resize_maintain_aspect
@@ -11,7 +10,6 @@ from cv.quality import analyze_quality
 from cv.scan import scan_document
 from cv.ocr import run_ocr, run_ocr_variants
 from cv.visualize import generate_debug_overlays
-import cv2
 
 router = APIRouter()
 

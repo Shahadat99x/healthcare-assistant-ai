@@ -21,3 +21,15 @@ Write-Host "  - Backend: http://127.0.0.1:8000"
 Write-Host "  - Frontend: http://localhost:3000"
 Write-Host ""
 Write-Host "Close both windows to stop the servers." -ForegroundColor Yellow
+
+
+"""
+cd apps/web
+npm run dev
+
+
+cd w:\healthcare-assistant-ai\apps\api
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+"""
+

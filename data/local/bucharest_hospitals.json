@@ -1,0 +1,142 @@
+[
+  {
+    "id": "buch-001",
+    "name": "Spitalul Universitar de Urgență București",
+    "type": "emergency",
+    "sector": 5,
+    "address": "Splaiul Independenței 169, București",
+    "phone": "021 318 0522",
+    "notes": "Major Emergency Receiving Hospital (UPU).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://suub.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-002",
+    "name": "Spitalul Clinic de Urgență Floreasca",
+    "type": "emergency",
+    "sector": 1,
+    "address": "Calea Floreasca 8, București",
+    "phone": "021 599 2300",
+    "notes": "Major Trauma Center (UPU).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://urgentafloreasca.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-003",
+    "name": "Spitalul Clinic de Urgență Sfântul Pantelimon",
+    "type": "emergency",
+    "sector": 2,
+    "address": "Șoseaua Pantelimon 340-342, București",
+    "phone": "021 255 4099",
+    "notes": "Emergency Receiving Hospital (UPU).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://www.sph.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-004",
+    "name": "Spitalul Clinic de Urgență Bagdasar-Arseni",
+    "type": "emergency",
+    "sector": 4,
+    "address": "Șoseaua Berceni 12, București",
+    "phone": "021 334 3025",
+    "notes": "Neurotrauma & Emergency Center (UPU).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://www.bagdasar-arseni.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-005",
+    "name": "Spitalul Universitar de Urgență Militar Central",
+    "type": "emergency",
+    "sector": 1,
+    "address": "Calea Plevnei 134, București",
+    "phone": "021 319 3051",
+    "notes": "Emergency Receiving Unit (UPU).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://www.scumc.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-006",
+    "name": "Spitalul Clinic de Copii Grigore Alexandrescu",
+    "type": "emergency",
+    "sector": 1,
+    "address": "Bulevardul Iancu de Hunedoara 30-32, București",
+    "phone": "021 316 9366",
+    "notes": "Pediatric Emergency (UPU-Copii).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://spitalulgrigorealexandrescu.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-007",
+    "name": "Spitalul Clinic de Urgență pentru Copii M.S. Curie",
+    "type": "emergency",
+    "sector": 4,
+    "address": "Bulevardul Constantin Brâncoveanu 20, București",
+    "phone": "021 460 3026",
+    "notes": "Pediatric Emergency (UPU-Copii).",
+    "source": {
+      "label": "Official Website",
+      "url": "https://mscurie.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-008",
+    "name": "Maternitatea Giulești (Spitalul Clinic de Obstetrică-Ginecologie)",
+    "type": "clinic",
+    "sector": 6,
+    "address": "Calea Giulești 5, București",
+    "phone": "021 316 1281",
+    "notes": "Maternity / OB-GYN Emergency.",
+    "source": {
+      "label": "Official Website",
+      "url": "https://spitalulgiulesti.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-009",
+    "name": "Spitalul Clinic Colțea",
+    "type": "general",
+    "sector": 3,
+    "address": "Bulevardul I. C. Brătianu 1, București",
+    "phone": "021 387 4100",
+    "notes": "General Hospital (Internal Medicine, Surgery, Oncology). Not a major trauma UPU.",
+    "source": {
+      "label": "Official Website",
+      "url": "https://coltea.ro/",
+      "checked_at": "2024-05-20"
+    }
+  },
+  {
+    "id": "buch-010",
+    "name": "Spitalul Clinic de Nefrologie Dr. Carol Davila",
+    "type": "general",
+    "sector": 1,
+    "address": "Calea Griviței 4, București",
+    "phone": "021 318 9184",
+    "notes": "Nephrology focus.",
+    "source": {
+      "label": "Official Website",
+      "url": "https://www.spitalulcaroldavila.ro/",
+      "checked_at": "2024-05-20"
+    }
+  }
+]

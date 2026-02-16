@@ -8,10 +8,10 @@ _api_env = Path(__file__).parent / ".env"
 _root_env = Path(__file__).parent.parent.parent / ".env"
 
 if _api_env.exists():
-    load_dotenv(_api_env)
+    load_dotenv(_api_env, override=False)
     print(f"[env] Loaded: {_api_env}")
 elif _root_env.exists():
-    load_dotenv(_root_env)
+    load_dotenv(_root_env, override=False)
     print(f"[env] Loaded: {_root_env}")
 else:
     print("[env] No .env file found")
@@ -39,11 +39,10 @@ app = FastAPI()
 app.include_router(intake.router)
 app.include_router(cv_samples.router)
 
-# CORS configuration
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS configuration (override with CORS_ORIGINS env var, comma-separated)
+_default_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_env_origins = os.getenv("CORS_ORIGINS")
+origins = [o.strip() for o in _env_origins.split(",")] if _env_origins else _default_origins
 
 app.add_middleware(
     CORSMiddleware,
@@ -71,6 +70,71 @@ async def read_health():
         "ollama_connected": ollama_status,
         "rag_index_loaded": rag_status
     }
+
+@app.get("/ready")
+async def read_ready():
+    """
+    Readiness probe — checks all subsystems.
+    Returns 200 if all critical checks pass, 503 otherwise.
+    """
+    import shutil
+    import subprocess
+
+    checks = {}
+
+    # 1. Ollama
+    try:
+        ollama_ok = await ollama_client.check_health()
+        checks["ollama"] = {
+            "ok": ollama_ok,
+            "detail": "Connected" if ollama_ok else "Not reachable (is Ollama running?)",
+        }
+    except Exception as e:
+        checks["ollama"] = {"ok": False, "detail": f"Error: {e}"}
+
+    # 2. RAG Index
+    rag_ok = rag_service.check_health()
+    if not rag_ok:
+        rag_path = getattr(rag_service, "index_path", "unknown")
+        rag_exists = os.path.exists(rag_path) if rag_path != "unknown" else False
+        if not rag_exists:
+            detail = f"Index not found at {rag_path}. Run: python scripts/ingest_rag.py"
+        else:
+            detail = "Index exists but failed to initialise (locked or corrupted?)"
+    else:
+        detail = "Loaded"
+    checks["rag_index"] = {"ok": rag_ok, "detail": detail}
+
+    # 3. OCR / Tesseract
+    tess_path = shutil.which("tesseract")
+    if not tess_path:
+        env_tess = os.getenv("TESSERACT_CMD")
+        if env_tess and os.path.exists(env_tess):
+            tess_path = env_tess
+    if tess_path:
+        try:
+            result = subprocess.run(
+                [tess_path, "--version"],
+                capture_output=True, text=True, timeout=5
+            )
+            version_line = result.stdout.split("\n")[0] if result.stdout else result.stderr.split("\n")[0]
+            checks["ocr"] = {"ok": True, "detail": f"{version_line} ({tess_path})"}
+        except Exception as e:
+            checks["ocr"] = {"ok": False, "detail": f"Found at {tess_path} but failed: {e}"}
+    else:
+        checks["ocr"] = {"ok": False, "detail": "Tesseract not found in PATH or TESSERACT_CMD"}
+
+    # Overall status
+    all_ok = all(c["ok"] for c in checks.values())
+    status_code = 200 if all_ok else 503
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "ready" if all_ok else "not_ready",
+            "checks": checks,
+        },
+    )
 
 # Phase 5: Export Endpoint
 @app.post("/export/chat")

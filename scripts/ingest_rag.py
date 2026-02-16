@@ -7,40 +7,40 @@ import time
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+import json
+
 # Config - Robust Absolute Paths
 # scripts/ingest_rag.py -> scripts -> root
 FILE_DIR = pathlib.Path(__file__).parent.resolve()
 REPO_ROOT = FILE_DIR.parent
-CORPUS_DIR = REPO_ROOT / "rag" / "corpus_raw"
+# Phase 4: Use trusted guidelines
+CORPUS_DIR = REPO_ROOT / "rag" / "corpus_raw" / "trusted_guidelines"
 INDEX_DIR = REPO_ROOT / "rag" / "index" / "chroma"
+MANIFEST_PATH = CORPUS_DIR / "manifest.json"
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-CHUNK_SIZE = 600
-CHUNK_OVERLAP = 100
+# Phase 4: Larger chunks for better context
+CHUNK_SIZE = 1000 
+CHUNK_OVERLAP = 200
 
-def parse_metadata(content):
-    """Simple YAML frontmatter parser."""
-    meta = {}
-    if content.startswith("---"):
-        try:
-            parts = content.split("---", 2)
-            if len(parts) >= 3:
-                yaml_block = parts[1]
-                body = parts[2].strip()
-                for line in yaml_block.strip().split("\n"):
-                    if ":" in line:
-                        key, val = line.split(":", 1)
-                        meta[key.strip()] = val.strip().strip('"')
-                return meta, body
-        except Exception as e:
-            print(f"Metadata parse error: {e}")
-    return {}, content
+def load_manifest():
+    """Loads validation manifest if it exists."""
+    if not MANIFEST_PATH.exists():
+        print(f"Warning: Manifest not found at {MANIFEST_PATH}")
+        return {}
+    try:
+        with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading manifest: {e}")
+        return {}
 
 def chunk_text(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     chunks = []
     start = 0
+    # Simple character-based chunking for now
     while start < len(text):
-        end = start + size
+        end = min(start + size, len(text))
         chunk = text[start:end]
         chunks.append(chunk)
         start += (size - overlap)
@@ -48,8 +48,11 @@ def chunk_text(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
 
 def remove_readonly(func, path, excinfo):
     """Helper to remove read-only files on Windows."""
-    os.chmod(path, 0o777)
-    func(path)
+    try:
+        os.chmod(path, 0o777)
+        func(path)
+    except Exception as e:
+        print(f"Error removing read-only file {path}: {e}")
 
 def safe_recreate_index(index_path):
     """Safely removes and recreates the index directory."""
@@ -76,7 +79,7 @@ def safe_recreate_index(index_path):
     time.sleep(1)
 
 def main():
-    print("--- Starting RAG Ingestion ---")
+    print("--- Starting RAG Ingestion (Phase 4: Trusted Corpus) ---")
     print(f"Repo Root: {REPO_ROOT}")
     print(f"Corpus Dir: {CORPUS_DIR}")
     print(f"Index Dir: {INDEX_DIR}")
@@ -92,9 +95,13 @@ def main():
     client = chromadb.PersistentClient(path=str(INDEX_DIR))
     collection = client.create_collection(name="medical_docs")
 
-    # 2. Process Files
-    # Use glob on the Path object
-    docs = list(CORPUS_DIR.glob("*.md"))
+    # 2. Load Manifest
+    manifest = load_manifest()
+    print(f"Loaded {len(manifest)} entries from manifest.")
+
+    # 3. Process Files
+    # Get all .txt and .md files
+    docs = list(CORPUS_DIR.glob("*.txt")) + list(CORPUS_DIR.glob("*.md"))
     print(f"Found {len(docs)} documents in {CORPUS_DIR}")
 
     total_chunks = 0
@@ -105,20 +112,41 @@ def main():
 
     for file_path in docs:
         filename = file_path.name
+        # Skip manifest itself if glob picked it up (though glob pattern shouldn't)
+        if filename == "manifest.json": continue
+
         print(f"Processing {filename}...")
         
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            print(f"Skipping {filename} due to read error: {e}")
+            continue
             
-        meta, body = parse_metadata(content)
-        # Fallback metadata
-        meta["doc_id"] = filename
-        if "title" not in meta: meta["title"] = filename
-        if "source_type" not in meta: meta["source_type"] = "local_file"
+        # Get metadata from manifest or default
+        if filename in manifest:
+            meta = manifest[filename]
+            # Flatten tags list to string for Chroma storage compatibility if needed
+            # But recent Chroma versions handle lists. Let's keep it safe and join tags.
+            if "tags" in meta and isinstance(meta["tags"], list):
+                meta["tags"] = ",".join(meta["tags"])
+        else:
+            print(f"Warning: {filename} not in manifest. Using defaults.")
+            meta = {
+                "title": filename,
+                "org": "Unknown",
+                "doc_type": "unknown",
+                "tags": ""
+            }
         
-        chunks = chunk_text(body)
+        # Ensure ID and critical fields are present
+        meta["filename"] = filename
+        
+        chunks = chunk_text(content)
         
         for i, chunk in enumerate(chunks):
+            # STABLE ID: filename#chunk_index
             chunk_id = f"{filename}#chunk_{i}"
             
             # Prepare batch
@@ -131,7 +159,7 @@ def main():
             
             total_chunks += 1
 
-    # 3. Upsert to Chroma
+    # 4. Upsert to Chroma
     if ids_batch:
         print(f"Upserting {len(ids_batch)} chunks to Chroma...")
         collection.add(

@@ -17,6 +17,7 @@ class SafetyService:
             r"chest pain", r"pressure in chest", r"tightness in chest",
             r"face droop", r"slurred speech", r"one[- ]sided weakness", r"stroke",
             r"uncontrolled bleeding", r"severe bleeding", r"blood everywhere",
+            r"vomiting blood", r"hematemesis", r"coughing blood",
             r"car accident", r"hit by car", r"major accident",
             r"throat swelling", r"swollen tongue", r"anaphylaxis", r"severe allergic reaction",
             r"seizure", r"fainted", r"passed out", r"unconscious",
@@ -41,10 +42,13 @@ class SafetyService:
             r"do i have", r"is it definitely", r"confirm diagnosis"
         ]
 
-        # 4. Unlock Phrases
+        # 4. Unlock Phrases (Expanded for Phase 1)
         self.unlock_patterns = [
             r"false alarm", r"joke", r"not real", r"symptoms gone",
-            r"called 112", r"at the hospital", r"doctor is coming"
+            r"called 112", r"at the hospital", r"doctor is coming",
+            r"i am safe", r"i'm safe", r"i am okay", r"im okay",
+            r"not an emergency", r"no.*stroke", r"no.*heart attack",
+            r"it was a mistake", r"confirm_safe" # Special token for button click
         ]
 
         # 5. Non-compliance Phrases
@@ -64,15 +68,21 @@ class SafetyService:
         """
         Stateful evaluation pipeline.
         session dict structure: 
-        { "emergency_lock": bool, "last_triage": str, "urgent_pending": bool }
+        { 
+            "lock_state": "none" | "awaiting_confirmation" | "cleared",
+            "last_triage": str, 
+            "urgent_pending": bool 
+        }
         """
         
         # --- 0. Check Unlock (Always First) ---
-        if session.get("emergency_lock", False):
+        lock_state = session.get("lock_state", "none")
+        
+        if lock_state == "awaiting_confirmation":
             if self._matches_any(text, self.unlock_patterns):
                 # Unlock
-                session["emergency_lock"] = False
-                session["last_triage"] = "self_care"
+                session["lock_state"] = "cleared"
+                session["last_triage"] = "self_care" # Reset triage state
                 return SafetyResult(
                     urgency="self_care",
                     flags=["emergency_lock_cleared"],
@@ -80,14 +90,14 @@ class SafetyService:
                     message_override="I understand. I'm glad you're safe. How else can I help you today?"
                 )
             else:
-                # Still Locked
+                # Still Locked - Strict Mode
                 flags = ["emergency_lock_active"]
-                msg = "EMERGENCY LOCK ACTIVE: I cannot continue this conversation until you confirm your safety. If this is a real emergency, call 112 immediately."
+                msg = "EMERGENCY LOCK ACTIVE: I cannot continue this conversation until you confirm your safety. Please type 'I am safe' or 'False alarm' if this is not an emergency."
                 
                 # Check Non-compliance while locked
                 if self._matches_any(text, self.non_compliance_patterns):
                     flags.append("non_compliance_detected")
-                    msg = "I can't help with medication. This could be life-threatening. Call 112 now."
+                    msg = "I can't help with medication. This could be life-threatening. Call 112 now. Please confirm 'I am safe' only if you are not in danger."
                 
                 return SafetyResult(
                     urgency="emergency",
@@ -98,7 +108,7 @@ class SafetyService:
 
         # --- 1. Emergency Red Flags ---
         if self._matches_any(text, self.emergency_patterns):
-            session["emergency_lock"] = True
+            session["lock_state"] = "awaiting_confirmation"
             session["last_triage"] = "emergency"
             
             msg = (
